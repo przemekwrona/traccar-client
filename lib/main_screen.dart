@@ -10,7 +10,6 @@ import 'package:traccar_client/preferences.dart';
 import 'geolocation_service.dart';
 import 'l10n/app_localizations.dart';
 import 'settings_screen.dart';
-import 'status_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -137,12 +136,6 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     }
                   },
                   child: Text(AppLocalizations.of(context)!.sosAction),
-                ),
-                FilledButton.tonal(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const StatusScreen()));
-                  },
-                  child: Text(AppLocalizations.of(context)!.statusButton),
                 ),
               ],
             ),

@@ -9,6 +9,7 @@ import 'package:traccar_client/qr_code_screen.dart';
 import 'geolocation_service.dart';
 import 'l10n/app_localizations.dart';
 import 'preferences.dart';
+import 'status_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -236,6 +237,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: Text(AppLocalizations.of(context)!.passwordLabel),
               onTap: _changePassword,
             ),
+          ListTile(
+            title: Text(AppLocalizations.of(context)!.statusButton),
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const StatusScreen()));
+            },
+          ),
         ],
       ),
     );
