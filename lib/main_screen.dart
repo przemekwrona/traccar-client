@@ -9,6 +9,7 @@ import 'package:traccar_client/preferences.dart';
 
 import 'geolocation_service.dart';
 import 'l10n/app_localizations.dart';
+import 'qr_code_screen.dart';
 import 'settings_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -19,6 +20,11 @@ class MainScreen extends StatefulWidget {
 }
 
 class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
+  static const _trackingTab = 0;
+  static const _settingsTab = 1;
+
+  final _settingsKey = GlobalKey<SettingsScreenState>();
+  int _selectedIndex = _trackingTab;
   bool trackingEnabled = false;
 
   @override
@@ -49,7 +55,20 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     });
   }
 
-  void refresh() => setState(() {});
+  void refresh() {
+    setState(() {});
+    _settingsKey.currentState?.refresh();
+  }
+
+  Future<void> _onDestinationSelected(int index) async {
+    if (index == _settingsTab && _selectedIndex != _settingsTab) {
+      if (await PasswordService.authenticate(context) && mounted) {
+        setState(() => _selectedIndex = index);
+      }
+      return;
+    }
+    setState(() => _selectedIndex = index);
+  }
 
   Widget _buildTrackingCard() {
     return Card(
@@ -145,60 +164,49 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildSettingsCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(AppLocalizations.of(context)!.settingsTitle),
-              titleTextStyle: Theme.of(context).textTheme.headlineMedium,
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(AppLocalizations.of(context)!.urlLabel),
-              subtitle: Text(Preferences.instance.getString(Preferences.url) ?? ''),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                FilledButton.tonal(
-                  onPressed: () async {
-                    if (await PasswordService.authenticate(context) && mounted) {
-                      await Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
-                      setState(() {});
-                    }
-                  },
-                  child: Text(AppLocalizations.of(context)!.settingsButton),
-                ),
-              ],
-            ),
-          ]
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final onSettings = _selectedIndex == _settingsTab;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Traccar Client'),
+        title: Text(onSettings ? l10n.settingsTitle : 'Traccar Client'),
+        actions: [
+          if (onSettings)
+            IconButton(
+              icon: const Icon(Icons.qr_code_scanner),
+              onPressed: () async {
+                await Navigator.push(context, MaterialPageRoute(builder: (_) => const QrCodeScreen()));
+                _settingsKey.currentState?.refresh();
+              },
+            ),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            _buildTrackingCard(),
-            const SizedBox(height: 16),
-            _buildSettingsCard(),
-          ],
-        ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: _buildTrackingCard(),
+          ),
+          SettingsScreen(key: _settingsKey),
+        ],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: _onDestinationSelected,
+        destinations: [
+          NavigationDestination(
+            icon: const Icon(Icons.location_on_outlined),
+            selectedIcon: const Icon(Icons.location_on),
+            label: l10n.trackingTitle,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.settings_outlined),
+            selectedIcon: const Icon(Icons.settings),
+            label: l10n.settingsTitle,
+          ),
+        ],
       ),
     );
   }

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:traccar_client/main.dart';
 import 'package:traccar_client/password_service.dart';
-import 'package:traccar_client/qr_code_screen.dart';
 
 import 'geolocation_service.dart';
 import 'l10n/app_localizations.dart';
@@ -15,10 +14,11 @@ class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  State<SettingsScreen> createState() => SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class SettingsScreenState extends State<SettingsScreen> {
+  void refresh() => setState(() {});
   bool advanced = false;
 
   String _getAccuracyLabel(String? key) {
@@ -161,90 +161,76 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final isHighestAccuracy = Preferences.instance.getString(Preferences.accuracy) == 'highest';
     final distance = Preferences.instance.getInt(Preferences.distance);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.settingsTitle),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code_scanner),
-            onPressed: () async {
-              await Navigator.push(context, MaterialPageRoute(builder: (_) => const QrCodeScreen()));
+    return ListView(
+      children: [
+        _buildListTile(AppLocalizations.of(context)!.idLabel, Preferences.id, false),
+        _buildListTile(AppLocalizations.of(context)!.urlLabel, Preferences.url, false),
+        _buildAccuracyListTile(),
+        _buildListTile(AppLocalizations.of(context)!.distanceLabel, Preferences.distance, true),
+        if (isHighestAccuracy || Platform.isAndroid && distance == 0)
+          _buildListTile(AppLocalizations.of(context)!.intervalLabel, Preferences.interval, true),
+        if (isHighestAccuracy)
+          _buildListTile(AppLocalizations.of(context)!.angleLabel, Preferences.angle, true),
+        _buildListTile(AppLocalizations.of(context)!.heartbeatLabel, Preferences.heartbeat, true),
+        SwitchListTile(
+          title: Text(AppLocalizations.of(context)!.advancedLabel),
+          value: advanced,
+          onChanged: (value) {
+            setState(() => advanced = value);
+          },
+        ),
+        if (advanced)
+          SwitchListTile(
+            title: Text(AppLocalizations.of(context)!.bufferLabel),
+            value: Preferences.instance.getBool(Preferences.buffer) ?? true,
+            onChanged: (value) async {
+              await Preferences.instance.setBool(Preferences.buffer, value);
+              await GeolocationService.tracker.setConfig(Preferences.buildConfig());
               setState(() {});
             },
           ),
-        ],
-      ),
-      body: ListView(
-        children: [
-          _buildListTile(AppLocalizations.of(context)!.idLabel, Preferences.id, false),
-          _buildListTile(AppLocalizations.of(context)!.urlLabel, Preferences.url, false),
-          _buildAccuracyListTile(),
-          _buildListTile(AppLocalizations.of(context)!.distanceLabel, Preferences.distance, true),
-          if (isHighestAccuracy || Platform.isAndroid && distance == 0)
-            _buildListTile(AppLocalizations.of(context)!.intervalLabel, Preferences.interval, true),
-          if (isHighestAccuracy)
-            _buildListTile(AppLocalizations.of(context)!.angleLabel, Preferences.angle, true),
-          _buildListTile(AppLocalizations.of(context)!.heartbeatLabel, Preferences.heartbeat, true),
+        if (advanced && Platform.isAndroid)
           SwitchListTile(
-            title: Text(AppLocalizations.of(context)!.advancedLabel),
-            value: advanced,
-            onChanged: (value) {
-              setState(() => advanced = value);
+            title: Text(AppLocalizations.of(context)!.wakelockLabel),
+            value: Preferences.instance.getBool(Preferences.wakelock) ?? false,
+            onChanged: (value) async {
+              await Preferences.instance.setBool(Preferences.wakelock, value);
+              await GeolocationService.tracker.setConfig(Preferences.buildConfig());
+              setState(() {});
             },
           ),
-          if (advanced)
-            SwitchListTile(
-              title: Text(AppLocalizations.of(context)!.bufferLabel),
-              value: Preferences.instance.getBool(Preferences.buffer) ?? true,
-              onChanged: (value) async {
-                await Preferences.instance.setBool(Preferences.buffer, value);
-                await GeolocationService.tracker.setConfig(Preferences.buildConfig());
-                setState(() {});
-              },
-            ),
-          if (advanced && Platform.isAndroid)
-            SwitchListTile(
-              title: Text(AppLocalizations.of(context)!.wakelockLabel),
-              value: Preferences.instance.getBool(Preferences.wakelock) ?? false,
-              onChanged: (value) async {
-                await Preferences.instance.setBool(Preferences.wakelock, value);
-                await GeolocationService.tracker.setConfig(Preferences.buildConfig());
-                setState(() {});
-              },
-            ),
-          if (advanced)
-            SwitchListTile(
-              title: Text(AppLocalizations.of(context)!.stopDetectionLabel),
-              value: Preferences.instance.getBool(Preferences.stopDetection) ?? true,
-              onChanged: (value) async {
-                await Preferences.instance.setBool(Preferences.stopDetection, value);
-                await GeolocationService.tracker.setConfig(Preferences.buildConfig());
-                setState(() {});
-              },
-            ),
-          if (advanced && Platform.isAndroid)
-            SwitchListTile(
-              title: Text(AppLocalizations.of(context)!.preferPlatformProvidersLabel),
-              value: Preferences.instance.getBool(Preferences.preferPlatformProviders) ?? false,
-              onChanged: (value) async {
-                await Preferences.instance.setBool(Preferences.preferPlatformProviders, value);
-                await GeolocationService.tracker.setConfig(Preferences.buildConfig());
-                setState(() {});
-              },
-            ),
-          if (advanced)
-            ListTile(
-              title: Text(AppLocalizations.of(context)!.passwordLabel),
-              onTap: _changePassword,
-            ),
+        if (advanced)
+          SwitchListTile(
+            title: Text(AppLocalizations.of(context)!.stopDetectionLabel),
+            value: Preferences.instance.getBool(Preferences.stopDetection) ?? true,
+            onChanged: (value) async {
+              await Preferences.instance.setBool(Preferences.stopDetection, value);
+              await GeolocationService.tracker.setConfig(Preferences.buildConfig());
+              setState(() {});
+            },
+          ),
+        if (advanced && Platform.isAndroid)
+          SwitchListTile(
+            title: Text(AppLocalizations.of(context)!.preferPlatformProvidersLabel),
+            value: Preferences.instance.getBool(Preferences.preferPlatformProviders) ?? false,
+            onChanged: (value) async {
+              await Preferences.instance.setBool(Preferences.preferPlatformProviders, value);
+              await GeolocationService.tracker.setConfig(Preferences.buildConfig());
+              setState(() {});
+            },
+          ),
+        if (advanced)
           ListTile(
-            title: Text(AppLocalizations.of(context)!.statusButton),
-            onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const StatusScreen()));
-            },
+            title: Text(AppLocalizations.of(context)!.passwordLabel),
+            onTap: _changePassword,
           ),
-        ],
-      ),
+        ListTile(
+          title: Text(AppLocalizations.of(context)!.statusButton),
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const StatusScreen()));
+          },
+        ),
+      ],
     );
   }
 }
