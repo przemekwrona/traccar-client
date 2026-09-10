@@ -95,7 +95,7 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     if (!started) {
                       messengerKey.currentState?.showSnackBar(
                         const SnackBar(
-                          content: Text('Failed to start tracking. Check location permissions.'),
+                          content: Text('Nie udało się rozpocząć śledzenia. Sprawdź uprawnienia lokalizacji.'),
                           duration: Duration(seconds: 4),
                         ),
                       );
@@ -138,12 +138,6 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   },
                   child: Text(AppLocalizations.of(context)!.sosAction),
                 ),
-                FilledButton.tonal(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const StatusScreen()));
-                  },
-                  child: Text(AppLocalizations.of(context)!.statusButton),
-                ),
               ],
             ),
           ],
@@ -183,6 +177,12 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   },
                   child: Text(AppLocalizations.of(context)!.settingsButton),
                 ),
+                FilledButton.tonal(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const StatusScreen()));
+                  },
+                  child: Text(AppLocalizations.of(context)!.statusButton),
+                ),
               ],
             ),
           ]
@@ -195,7 +195,7 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Traccar Client'),
+        title: const Text('Nastepna Stacja'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

@@ -106,8 +106,10 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Nastepna Stacja',
       scaffoldMessengerKey: messengerKey,
       navigatorKey: navigatorKey,
+      locale: const Locale('pl'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
