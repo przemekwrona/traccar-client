@@ -128,33 +128,36 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               },
             ),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
+            Row(
               children: [
-                FilledButton.tonal(
-                  onPressed: () async {
-                    try {
-                      await GeolocationService.tracker.requestPosition();
-                    } on PlatformException {
-                      // permission denied or location error
-                    }
-                  },
-                  child: Text(AppLocalizations.of(context)!.locationButton),
-                ),
-                FilledButton.tonal(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.errorContainer,
-                    foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
+                Expanded(
+                  child: FilledButton.tonal(
+                    onPressed: () async {
+                      try {
+                        await GeolocationService.tracker.requestPosition();
+                      } on PlatformException {
+                        // permission denied or location error
+                      }
+                    },
+                    child: Text(AppLocalizations.of(context)!.locationButton),
                   ),
-                  onPressed: () async {
-                    try {
-                      await GeolocationService.tracker.requestPosition(alarm: 'sos');
-                    } on PlatformException {
-                      // permission denied or location error
-                    }
-                  },
-                  child: Text(AppLocalizations.of(context)!.sosAction),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: FilledButton.tonal(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.errorContainer,
+                      foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
+                    ),
+                    onPressed: () async {
+                      try {
+                        await GeolocationService.tracker.requestPosition(alarm: 'sos');
+                      } on PlatformException {
+                        // permission denied or location error
+                      }
+                    },
+                    child: Text(AppLocalizations.of(context)!.sosAction),
+                  ),
                 ),
               ],
             ),
